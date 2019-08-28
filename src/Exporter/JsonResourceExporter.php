@@ -32,7 +32,7 @@ final class JsonResourceExporter extends ResourceExporter
      */
     public function export(array $idsToExport): void
     {
-        $this->pluginPool->initPlugins($idsToExport);
+        $this->pluginPool->initPlugins($idsToExport, 'fr_FR');
 
         foreach ($idsToExport as $id) {
             $this->data[] = $this->getDataForId((string) $id);

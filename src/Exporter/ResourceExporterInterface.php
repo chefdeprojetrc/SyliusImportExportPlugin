@@ -13,10 +13,13 @@ interface ResourceExporterInterface
 
     /**
      * @param int[] $idsToExport
+     * @param string $locale
      *
      * @return array[]
      */
-    public function exportData(array $idsToExport): array;
+    public function exportData(array $idsToExport, string $locale): array;
+
+    public function setLocales(array $locales): void;
 
     public function setExportFile(string $filename): void;
 

@@ -11,6 +11,9 @@ use FriendsOfSylius\SyliusImportExportPlugin\Writer\WriterInterface;
 class ResourceExporter implements ResourceExporterInterface
 {
     /** @var string[] */
+    protected $locales;
+
+    /** @var string[] */
     protected $resourceKeys;
 
     /** @var WriterInterface */
@@ -35,6 +38,7 @@ class ResourceExporter implements ResourceExporterInterface
         $this->pluginPool = $pluginPool;
         $this->transformerPool = $transformerPool;
         $this->resourceKeys = $resourceKeys;
+        $this->setLocales(['fr_FR']);
     }
 
     /**
@@ -43,6 +47,14 @@ class ResourceExporter implements ResourceExporterInterface
     public function setExportFile(string $filename): void
     {
         $this->writer->setFile($filename);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLocales(array $locales = []): void
+    {
+        $this->locales = $locales;
     }
 
     /**
@@ -58,36 +70,41 @@ class ResourceExporter implements ResourceExporterInterface
      */
     public function export(array $idsToExport): void
     {
-        $this->pluginPool->initPlugins($idsToExport);
         $this->writer->write($this->resourceKeys);
 
-        foreach ($idsToExport as $id) {
-            $this->writeDataForId((string) $id);
+        foreach ($this->locales as $locale) {
+            $this->pluginPool->initPlugins($idsToExport, $locale);
+
+            foreach ($idsToExport as $id) {
+                $this->writeDataForId((string) $id, $locale);
+            }
         }
+
     }
 
     /**
      * @param int[] $idsToExport
+     * @param string $locale
      *
      * @return array[]
      */
-    public function exportData(array $idsToExport): array
+    public function exportData(array $idsToExport, string $locale): array
     {
-        $this->pluginPool->initPlugins($idsToExport);
+        $this->pluginPool->initPlugins($idsToExport, $locale);
         $this->writer->write($this->resourceKeys);
 
         $exportIdDataArray = [];
 
         foreach ($idsToExport as $id) {
-            $exportIdDataArray[$id] = $this->getDataForId((string) $id);
+            $exportIdDataArray[$locale.'-'.$id] = $this->getDataForId((string) $id, $locale);
         }
 
         return $exportIdDataArray;
     }
 
-    private function writeDataForId(string $id): void
+    private function writeDataForId(string $id, string $locale): void
     {
-        $dataForId = $this->getDataForId($id);
+        $dataForId = $this->getDataForId($id, $locale);
 
         $this->writer->write($dataForId);
     }
@@ -95,9 +112,9 @@ class ResourceExporter implements ResourceExporterInterface
     /**
      * @return array[]
      */
-    protected function getDataForId(string $id): array
+    protected function getDataForId(string $id, string $locale): array
     {
-        $data = $this->pluginPool->getDataForId($id);
+        $data = $this->pluginPool->getDataForId($id, $locale);
 
         if (null !== $this->transformerPool) {
             foreach ($data as $key => $value) {

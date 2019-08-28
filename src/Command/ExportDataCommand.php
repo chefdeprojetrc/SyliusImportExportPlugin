@@ -42,6 +42,17 @@ final class ExportDataCommand extends Command
                 new InputArgument('exporter', InputArgument::OPTIONAL, 'The exporter to use.'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'The target file to export to.'),
                 new InputOption('format', null, InputOption::VALUE_REQUIRED, 'The format of the file to export to'),
+                new InputOption('locales', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The locale used for exporting data', [
+                    'de_DE',
+                    'en_GB',
+                    'en_US',
+                    'es_ES',
+                    'fr_CH',
+                    'fr_FR',
+                    'it_IT',
+                    'pt_BR',
+                    'ru_RU'
+                ]),
                 /** @todo Extracting details to show with this option. At the moment it will have no effect */
                 new InputOption('details', null, InputOption::VALUE_NONE,
                     'If to return details about skipped/failed rows'),
@@ -63,6 +74,8 @@ final class ExportDataCommand extends Command
         }
 
         $format = $input->getOption('format');
+        $locales = $input->getOption('locales');
+
         $name = ExporterRegistry::buildServiceName('sylius.' . $exporter, $format);
 
         if (!$this->exporterRegistry->has($name)) {
@@ -74,6 +87,7 @@ final class ExportDataCommand extends Command
         /** @var RepositoryInterface $repository */
         $repository = $this->container->get('sylius.repository.' . $exporter);
         $items = $repository->findAll();
+
         $idsToExport = array_map(function (ResourceInterface $item) {
             return $item->getId();
         }, $items);
@@ -81,6 +95,7 @@ final class ExportDataCommand extends Command
         /** @var ResourceExporterInterface $service */
         $service = $this->exporterRegistry->get($name);
         $service->setExportFile($file);
+        $service->setLocales($locales);
 
         $service->export($idsToExport);
 

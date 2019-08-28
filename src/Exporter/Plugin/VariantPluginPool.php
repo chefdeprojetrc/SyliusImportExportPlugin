@@ -7,7 +7,7 @@ namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin;
 use FriendsOfSylius\SyliusImportExportPlugin\Service\AttributeCodesProviderInterface;
 use FriendsOfSylius\SyliusImportExportPlugin\Service\ImageTypesProviderInterface;
 
-final class ProductPluginPool extends PluginPool
+final class VariantPluginPool extends PluginPool
 {
     /** @var ImageTypesProviderInterface */
     private $imageTypesProvider;
@@ -27,8 +27,6 @@ final class ProductPluginPool extends PluginPool
 
     public function initPlugins(array $ids, string $locale): void
     {
-        $this->exportKeys = \array_merge($this->exportKeys, $this->attributeCodesProvider->getAttributeCodesList());
-        $this->exportKeys = \array_merge($this->exportKeys, $this->imageTypesProvider->getProductImagesCodesWithPrefixList());
         $this->exportKeysAvailable = $this->exportKeys;
         parent::initPlugins($ids, $locale);
     }

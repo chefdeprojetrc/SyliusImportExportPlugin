@@ -34,6 +34,7 @@ final class ProductResourceExporter extends ResourceExporter
     {
         $this->resourceKeys = \array_merge($this->resourceKeys, $this->attributeCodesProvider->getAttributeCodesList());
         $this->resourceKeys = \array_merge($this->resourceKeys, $this->imageTypesProvider->getProductImagesCodesWithPrefixList());
+
         parent::export($idsToExport);
     }
 }
