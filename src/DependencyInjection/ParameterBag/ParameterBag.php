@@ -20,6 +20,8 @@ final class ParameterBag extends FrozenParameterBag implements ParameterBagInter
 
     public function __construct(Container $container)
     {
+        parent::__construct();
+
         $this->container = $container;
     }
 

@@ -87,6 +87,8 @@ final class ProductProcessor implements ResourceProcessorInterface
     private $productTranslationFactory;
     /** @var Slugify  */
     private $slugify;
+    /** @var array */
+    private $slugs;
 
     public function __construct(
         ProductFactoryInterface $productFactory,

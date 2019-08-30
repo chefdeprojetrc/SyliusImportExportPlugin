@@ -41,7 +41,7 @@ final class ProductVariantResourcePlugin extends ResourcePlugin
         $this->resources = $this->findResources($idsToExport);
         $this->locale = $locale;
 
-        /** @var ProductInterface $resource */
+        /** @var ProductVariantInterface $resource */
         foreach ($this->resources as $resource) {
             $this->addTranslationData($resource, $locale);
 

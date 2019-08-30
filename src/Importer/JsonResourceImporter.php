@@ -7,10 +7,12 @@ namespace FriendsOfSylius\SyliusImportExportPlugin\Importer;
 use Doctrine\Common\Persistence\ObjectManager;
 use FriendsOfSylius\SyliusImportExportPlugin\Exception\ImporterException;
 use FriendsOfSylius\SyliusImportExportPlugin\Processor\ResourceProcessorInterface;
+use Port\Reader\ReaderFactory;
 
 final class JsonResourceImporter extends ResourceImporter implements SingleDataArrayImporterInterface
 {
     public function __construct(
+        ReaderFactory $readerFactory,
         ObjectManager $objectManager,
         ResourceProcessorInterface $resourceProcessor,
         ImportResultLoggerInterface $importerResult,
@@ -18,12 +20,15 @@ final class JsonResourceImporter extends ResourceImporter implements SingleDataA
         bool $failOnIncomplete,
         bool $stopOnFailure
     ) {
-        $this->objectManager = $objectManager;
-        $this->resourceProcessor = $resourceProcessor;
-        $this->result = $importerResult;
-        $this->batchSize = $batchSize;
-        $this->failOnIncomplete = $failOnIncomplete;
-        $this->stopOnFailure = $stopOnFailure;
+        parent::__construct(
+            $readerFactory,
+            $objectManager,
+            $resourceProcessor,
+            $importerResult,
+            $batchSize,
+            $failOnIncomplete,
+            $stopOnFailure
+        );
     }
 
     /**

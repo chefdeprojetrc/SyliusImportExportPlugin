@@ -6,6 +6,7 @@ namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter;
 
 use FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\PluginPoolInterface;
 use FriendsOfSylius\SyliusImportExportPlugin\Exporter\Transformer\TransformerPoolInterface;
+use FriendsOfSylius\SyliusImportExportPlugin\Writer\WriterInterface;
 
 final class JsonResourceExporter extends ResourceExporter
 {
@@ -18,13 +19,12 @@ final class JsonResourceExporter extends ResourceExporter
      * @param string[] $resourceKeys
      */
     public function __construct(
+        WriterInterface $writer,
         PluginPoolInterface $pluginPool,
         array $resourceKeys,
         ?TransformerPoolInterface $transformerPool
     ) {
-        $this->pluginPool = $pluginPool;
-        $this->transformerPool = $transformerPool;
-        $this->resourceKeys = $resourceKeys;
+        parent::__construct($writer, $pluginPool, $resourceKeys, $transformerPool);
     }
 
     /**
@@ -32,14 +32,18 @@ final class JsonResourceExporter extends ResourceExporter
      */
     public function export(array $idsToExport): void
     {
-        $this->pluginPool->initPlugins($idsToExport, 'fr_FR');
+        // @todo manage default locale on resource export
+        $locale = 'fr_FR';
+
+        $this->pluginPool->initPlugins($idsToExport, $locale);
 
         foreach ($idsToExport as $id) {
-            $this->data[] = $this->getDataForId((string) $id);
+            $this->data[] = $this->getDataForId((string) $id, $locale);
         }
 
         if ($this->filename !== null) { // only true if command is used to export
-            file_put_contents($this->filename, $this->getExportedData());
+            $this->writer->setFile($this->filename);
+            $this->writer->write($this->data);
         }
     }
 

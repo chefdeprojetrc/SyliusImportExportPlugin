@@ -51,21 +51,23 @@ class PluginPoolSpec extends ObjectBehavior
             'id2',
             'id3',
         ];
+        $locale = 'fr_FR';
 
         $plugin1->getFieldNames()->willReturn(['bla']);
         $plugin2->getFieldNames()->willReturn(['test']);
 
-        $plugin1->init($ids)->shouldBeCalled();
-        $plugin2->init($ids)->shouldBeCalled();
-        $this->initPlugins($ids);
+        $plugin1->init($ids, $locale)->shouldBeCalled();
+        $plugin2->init($ids, $locale)->shouldBeCalled();
+        $this->initPlugins($ids, $locale);
     }
 
     function it_gets_correct_data_from_multiple_plugins(
         PluginInterface $plugin1,
         PluginInterface $plugin2
     ) {
+        $locale = 'fr_FR';
         $plugin1
-            ->getData('id1', ['description', 'name'])
+            ->getData('id1', $locale, ['description', 'name'])
             ->willReturn(
                 [
                     'description' => '',
@@ -73,7 +75,7 @@ class PluginPoolSpec extends ObjectBehavior
                 ]
             );
         $plugin2
-            ->getData('id1', ['description', 'name'])
+            ->getData('id1', $locale, ['description', 'name'])
             ->willReturn(
               [
                   'description' => 'this is a description',
@@ -84,7 +86,7 @@ class PluginPoolSpec extends ObjectBehavior
         $plugin1->getFieldNames()->willReturn(['description', 'name']);
         $plugin2->getFieldNames()->willReturn(['description', 'name']);
 
-        $this->getDataForId('id1')
+        $this->getDataForId('id1', $locale)
             ->shouldReturn(
                 [
                     'description' => 'this is a description',
@@ -100,7 +102,7 @@ class PluginPoolSpec extends ObjectBehavior
         $plugin1->getFieldNames()->willReturn(['description', 'name']);
 
         $plugin1
-            ->getData('id1', ['description', 'name', 'blabla'])
+            ->getData('id1', 'fr_FR', ['description', 'name', 'blabla'])
             ->willReturn(
                 [
                     'description' => '',

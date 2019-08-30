@@ -108,7 +108,6 @@ class ResourcePlugin implements PluginInterface
 
     private function addDataForId(ResourceInterface $resource): void
     {
-        dump($resource);
         $fields = $this->entityManager->getClassMetadata(\get_class($resource));
 
         foreach ($fields->getFieldNames() as $index => $field) {

@@ -11,16 +11,18 @@ use FriendsOfSylius\SyliusImportExportPlugin\Importer\JsonResourceImporter;
 use FriendsOfSylius\SyliusImportExportPlugin\Importer\ResourceImporter;
 use FriendsOfSylius\SyliusImportExportPlugin\Processor\ResourceProcessorInterface;
 use PhpSpec\ObjectBehavior;
+use Port\Reader\ReaderFactory;
 use Prophecy\Argument;
 
 class JsonResourceImporterSpec extends ObjectBehavior
 {
     function let(
+        ReaderFactory $readerFactory,
         ObjectManager $objectManager,
         ResourceProcessorInterface $resourceProcessor,
         ImportResultLoggerInterface $importerResult
     ) {
-        $this->beConstructedWith($objectManager, $resourceProcessor, $importerResult, 0, false, false);
+        $this->beConstructedWith($readerFactory, $objectManager, $resourceProcessor, $importerResult, 0, false, false);
     }
 
     function it_is_initializable()

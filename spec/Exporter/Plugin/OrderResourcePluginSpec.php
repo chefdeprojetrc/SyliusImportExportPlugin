@@ -55,6 +55,7 @@ class OrderResourcePluginSpec extends ObjectBehavior
         HydratorInterface $hydrator
     ) {
         $idsToExport = [1];
+        $locale = 'fr_FR';
 
         $hydrator->getHydratedResources(
             $idsToExport
@@ -195,8 +196,8 @@ class OrderResourcePluginSpec extends ObjectBehavior
         $propertyAccessor->getValue($resource, 'TokenValue')->willReturn(null);
         $propertyAccessor->getValue($resource, 'CustomerIp')->willReturn(null);
 
-        $this->init($idsToExport);
-        $this->getData('1', [
+        $this->init($idsToExport, $locale);
+        $this->getData('1', 'fr_FR', [
             'ShippingAddressId',
             'BillingAddressId',
             'ChannelId',

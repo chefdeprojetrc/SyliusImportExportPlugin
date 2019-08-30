@@ -1,6 +1,6 @@
 services:
     sylius.factory.spreadsheet_reader:
-        class: Port\Spreadsheet\SpreadsheetReaderFactory
+        class: FriendsOfSylius\SyliusImportExportPlugin\Reader\JsonReaderFactory
         arguments:
             - 1
 

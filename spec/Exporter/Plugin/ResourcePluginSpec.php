@@ -46,6 +46,7 @@ class ResourcePluginSpec extends ObjectBehavior
         ClassMetadata $classMetadata
     ) {
         $idsToExport = [1, 2];
+        $locale = 'fr_FR';
 
         $repository->findBy(
             [
@@ -122,8 +123,8 @@ class ResourcePluginSpec extends ObjectBehavior
         $propertyAccessor->getValue($taxCategoryCars, 'CreatedAt')->willReturn(null);
         $propertyAccessor->getValue($taxCategoryCars, 'UpdatedAt')->willReturn(null);
 
-        $this->init($idsToExport);
-        $this->getData('1', ['Code', 'Name', 'Description', 'Rates'])
+        $this->init($idsToExport, $locale);
+        $this->getData('1', 'fr_FR', ['Code', 'Name', 'Description', 'Rates'])
             ->shouldReturn([
                 'Code' => 'BOOKS',
                 'Name' => 'books',
@@ -131,7 +132,7 @@ class ResourcePluginSpec extends ObjectBehavior
                 'Rates' => $bookRates,
             ]);
 
-        $this->getData('2', ['Code', 'Name', 'Description', 'Rates'])
+        $this->getData('2', 'fr_FR', ['Code', 'Name', 'Description', 'Rates'])
             ->shouldReturn([
                 'Code' => 'CARS',
                 'Name' => 'cars',

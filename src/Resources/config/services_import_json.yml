@@ -1,8 +1,12 @@
 services:
+    sylius.factory.json_reader:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Reader\JsonReader
+
     # JSON-Importers
     sylius.importer.countries.json:
         class: FriendsOfSylius\SyliusImportExportPlugin\Importer\JsonResourceImporter
         arguments:
+            - "@sylius.factory.json_reader"
             - "@sylius.manager.country"
             - "@sylius.processor.countries"
             - "@sylius.importer.result"
