@@ -135,8 +135,12 @@ services:
             - { name: sylius.importer_transformer }
 
     # Commands
+    sylius.command.exchange_data:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Command\AbstractDataCommand
+
     sylius.command.import_data:
         class: FriendsOfSylius\SyliusImportExportPlugin\Command\ImportDataCommand
+        parent: sylius.command.exchange_data
         arguments:
             - "@sylius.importers_registry"
         tags:
@@ -153,8 +157,11 @@ services:
 
     sylius.command.export_data:
         class: FriendsOfSylius\SyliusImportExportPlugin\Command\ExportDataCommand
+        parent: sylius.command.exchange_data
         arguments:
             - "@sylius.exporters_registry"
+            - "@sylius.service.mapper.resource_mapper_service"
+            - "@sylius.locale_provider"
         calls:
             - [ setContainer, ["@service_container"]]
         tags:
@@ -261,7 +268,7 @@ services:
         class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\ProductPluginPool
         arguments:
             - ["@sylius.exporter.plugin.resource.product_variants"]
-            - ['Locale', 'Product_code', 'Name', 'Code', 'Ean', 'CodeGalitt', 'ShippingCategory', 'ShippingRequired', 'ShippingHeight', 'ShippingWidth', 'ShippingDepth', 'ShippingWeight', 'Price_FR_WEB', 'Price_CH_WEB', 'Price_IT_WEB']
+            - ['Locale', 'Code', 'Name', 'Label', 'Description', 'Short_Description', 'Meta_Description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels',  'Enabled',  'Price', 'VariantSelectionMethod','Ecoffret','Orderable','Listed','Reference','RetailCategory','HexColorCode','id_shop','link_rewrite','textintro','nbetab','nbpeople','excluweb','Variant_Name', 'Variant_Code', 'Variant_Ean', 'Variant_CodeGalitt', 'Variant_ShippingCategory', 'Variant_ShippingRequired', 'Variant_ShippingHeight', 'Variant_ShippingWidth', 'Variant_ShippingDepth', 'Variant_ShippingWeight', 'Variant_Price_FR_WEB', 'Variant_Price_CH_WEB', 'Variant_Price_IT_WEB']
             - "@sylius.service.attributes_code"
             - "@sylius.service.product_image_code"
 
@@ -290,6 +297,11 @@ services:
         class: FriendsOfSylius\SyliusImportExportPlugin\Service\ImageTypesProvider
         arguments:
             - "@sylius.repository.product_image"
+
+    sylius.service.mapper.resource_mapper_service:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Service\Mapper\ResourceMapperService
+        arguments:
+            - "@doctrine.orm.entity_manager"
 
     # generic ResourceProcessors, which can work with just Property-Accessors
     sylius.processor.countries:

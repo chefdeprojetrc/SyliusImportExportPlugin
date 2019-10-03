@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter;
 
-use Sylius\Component\Registry\ServiceRegistry;
+use FriendsOfSylius\SyliusImportExportPlugin\Service\ExchangerRegistry;
 
-final class ExporterRegistry extends ServiceRegistry
+final class ExporterRegistry extends ExchangerRegistry
 {
     public const EVENT_HOOK_NAME_PREFIX_GRID_BUTTONS = 'app.grid_event_listener.admin.crud';
-
-    public static function buildServiceName(string $type, string $format): string
-    {
-        return sprintf('%s.%s', $type, $format);
-    }
 
     /**
      * @param string[] $formats
@@ -23,5 +18,10 @@ final class ExporterRegistry extends ServiceRegistry
         $format = implode('_', $formats);
 
         return sprintf('%s_%s_%s', self::EVENT_HOOK_NAME_PREFIX_GRID_BUTTONS, $type, $format);
+    }
+
+    public function getServicePrefix(): string
+    {
+        return 'sylius.';
     }
 }

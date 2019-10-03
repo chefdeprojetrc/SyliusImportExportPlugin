@@ -67,7 +67,7 @@ services:
         arguments:
             - "@sylius.exporter.csv_writer"
             - "@sylius.exporter.pluginpool.product_variants"
-            - ['Locale', 'Product_code', 'Name', 'Code', 'Ean', 'CodeGalitt', 'ShippingCategory', 'ShippingRequired', 'ShippingHeight', 'ShippingWidth', 'ShippingDepth', 'ShippingWeight', 'Price_FR_WEB', 'Price_CH_WEB', 'Price_IT_WEB']
+            - ['Locale', 'Code', 'Name', 'Label', 'Description', 'Short_Description', 'Meta_Description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels',  'Enabled',  'Price', 'VariantSelectionMethod','Ecoffret','Orderable','Listed','Reference','RetailCategory','HexColorCode','id_shop','link_rewrite','textintro','nbetab','nbpeople','excluweb','Variant_Name', 'Variant_Code', 'Variant_Ean', 'Variant_CodeGalitt', 'Variant_ShippingCategory', 'Variant_ShippingRequired', 'Variant_ShippingHeight', 'Variant_ShippingWidth', 'Variant_ShippingDepth', 'Variant_ShippingWeight', 'Variant_Price_FR_WEB', 'Variant_Price_CH_WEB', 'Variant_Price_IT_WEB']
             - "@sylius.exporters_transformer_pool"
         tags:
             - { name: sylius.exporter, type: sylius.product_variant, format: csv }

@@ -45,6 +45,7 @@ class PluginPool implements PluginPoolInterface
     {
         foreach ($this->plugins as $plugin) {
             $plugin->init($ids, $locale);
+            $plugin->getDataForResources();
 
             $this->exportKeysAvailable = array_merge($this->exportKeysAvailable, $plugin->getFieldNames());
         }
@@ -79,7 +80,7 @@ class PluginPool implements PluginPoolInterface
      */
     private function getDataForIdFromPlugin(string $id, string $locale, PluginInterface $plugin, array $result): array
     {
-        foreach ($plugin->getData($id, $locale, $this->exportKeysAvailable) as $exportKey => $exportValue) {
+        foreach ($plugin->getData($id, $locale, $this->exportKeys) as $exportKey => $exportValue) {
             if (false === empty($result[$exportKey])) {
                 continue;
             }

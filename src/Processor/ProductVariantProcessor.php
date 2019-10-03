@@ -86,6 +86,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
     private $productVariantRepository;
     /** @var FactoryInterface */
     private $productTranslationFactory;
+    /** @var RepositoryInterface */
+    private $syliusShippingCategory;
     /** @var Slugify  */
     private $slugify;
 
@@ -158,22 +160,26 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
 
         $product = $this->getProduct($data);
 
-        $variant = $this->getProductVariant($data['Code']);
-        $variant->setProduct($product);
-        $variant->setCurrentLocale($data['Locale']);
-        $variant->setCurrentLocale($data['Locale']);
-        $variant->setName(substr($data['Name'], 0, 255));
-        $variant->setCode($data['Code'] ?: (string) Uuid::uuid4());
+        $this->setChannel($product, $data);
+        $this->setDetails($product, $data);
+        $this->setAttributesData($product, $data);
+        $this->setMainTaxon($product, $data);
+        $this->setTaxons($product, $data);
 
-        $variant->setEan($data['Ean']);
-        $variant->setCodeGalitt($data['CodeGalitt']);
-        $variant->setShippingRequired(empty($data['ShippingRequired']));
-        $variant->setWidth($data['ShippingWidth']);
-        $variant->setHeight($data['ShippingHeight']);
-        $variant->setDepth($data['ShippingDepth']);
-        $variant->setWeight($data['ShippingWeight']);
+        $variant = $this->getProductVariant($data['Variant_Code']);
+        $variant->setCurrentLocale($data['Locale']);
+        $variant->setName(substr($data['Variant_Name'], 0, 255));
+        $variant->setCode($data['Variant_Code'] ?: (string) Uuid::uuid4());
 
-        $shippingCategory = $this->syliusShippingCategory->findOneBy(['code' => $data['ShippingCategory']]);
+        $variant->setEan($data['Variant_Ean']);
+        $variant->setCodeGalitt($data['Variant_CodeGalitt']);
+        $variant->setShippingRequired(empty($data['Variant_ShippingRequired']));
+        $variant->setWidth($this->transformerPool->handle('float', $data['Variant_ShippingWidth']));
+        $variant->setHeight($this->transformerPool->handle('float', $data['Variant_ShippingHeight']));
+        $variant->setDepth($this->transformerPool->handle('float', $data['Variant_ShippingDepth']));
+        $variant->setWeight($this->transformerPool->handle('float', $data['Variant_ShippingWeight']));
+
+        $shippingCategory = $this->syliusShippingCategory->findOneBy(['code' => $data['Variant_ShippingCategory']]);
         $variant->setShippingCategory($shippingCategory);
 
         foreach ($product->getChannels() as $channel) {
@@ -184,25 +190,41 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
             ]);
 
             if (null === $channelPricing) {
-                /** @var ChannelPricingInterface $channelPricing */
                 $channelPricing = $this->channelPricingFactory->createNew();
                 $channelPricing->setChannelCode($channelCode);
                 $variant->addChannelPricing($channelPricing);
             }
 
-            $channelPricing->setPrice((int) $data['Price_'.$channelCode]);
-            $channelPricing->setOriginalPrice((int) $data['Price_'.$channelCode]);
+            $channelPricing->setPrice((int) $data['Variant_Price_'.$channelCode]);
+            $channelPricing->setOriginalPrice((int) $data['Variant_Price_'.$channelCode]);
         }
 
-        $this->productVariantRepository->add($variant);
+        $product->addVariant($variant);
+        $this->productRepository->add($product);
     }
 
     private function getProduct(array $data): ProductInterface
     {
         /** @var ProductInterface|null $product */
-        $product = $this->productRepository->findOneBy(['code' => $data['Product_code']]);
+        $product = $this->productRepository->findOneBy(['code' => $data['Code']]);
         if (null === $product) {
-            throw new \Exception($data['Product_code']. ' not found');
+            $optionsResolver =
+                (new OptionsResolver())
+                    ->setDefault('products', [])
+                    ->setAllowedTypes('products', 'array');
+
+            /** @var ProductInterface $product */
+            $product = $this->resourceProductFactory->createNew();
+            $product->setCode($data['Code']);
+            $product->setEnabled(true);
+            $product->setReference(str_pad($data['Reference'], 4, '0', STR_PAD_LEFT));
+            $product->setLabel($data['Label']);
+            $product->setEcoffret(!empty($data['Ecoffret']));
+            $product->setOrderable(!empty($data['Orderable']));
+            $product->setListed(!empty($data['Listed']));
+            $product->setRetailCategory($data['RetailCategory']);
+            $product->setHexColorCode($data['HexColorCode']);
+            $product->setVariantSelectionMethod(ProductInterface::VARIANT_SELECTION_MATCH);
         }
 
         return $product;
@@ -219,6 +241,18 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         }
 
         return $productVariant;
+    }
+
+    private function setChannel(ProductInterface $product, array $data): void
+    {
+        $channels = \explode('|', $data['Channels']);
+        foreach ($channels as $channelCode) {
+            $channel = $this->channelRepository->findOneBy(['code' => $channelCode]);
+            if ($channel === null) {
+                continue;
+            }
+            $product->addChannel($channel);
+        }
     }
 
     private function setMainTaxon(ProductInterface $product, array $data): void
@@ -283,8 +317,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $translation = $product->getTranslation($data['Locale']);
         $translation->setName($data['Name']);
         $translation->setDescription($data['Description']);
-        $translation->setShortDescription($data['Short_description']);
-        $translation->setMetaDescription($data['Meta_description']);
+        $translation->setShortDescription($data['Short_Description']);
+        $translation->setMetaDescription($data['Meta_Description']);
         $translation->setMetaKeywords($data['Meta_keywords']);
         $translation->setSlug($data['link_rewrite']);
     }
@@ -315,5 +349,47 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         }
 
         $product->addVariant($productVariant);
+    }
+
+    private function setAttributeValue(ProductInterface $product, array $data, string $attrCode): void
+    {
+        /** @var ProductAttribute $productAttr */
+        $productAttr = $this->productAttributeRepository->findOneBy(['code' => $attrCode]);
+        /** @var ProductAttributeValueInterface $attr */
+        $attr = $this->productAttributeValueFactory->createNew();
+        $attr->setAttribute($productAttr);
+        $attr->setProduct($product);
+        $attr->setLocaleCode($product->getTranslation()->getLocale());
+
+        if (null !== $this->transformerPool) {
+            $data[$attrCode] = $this->transformerPool->handle($productAttr->getType(), $data[$attrCode]);
+        }
+
+        $attr->setValue($data[$attrCode]);
+        $product->addAttribute($attr);
+        $this->manager->persist($attr);
+    }
+
+    private function addTaxonToProduct(ProductInterface $product, string $taxonCode): void
+    {
+        /** @var Taxon|null $taxon */
+        $taxon = $this->taxonRepository->findOneBy(['code' => $taxonCode]);
+        if ($taxon === null) {
+            return;
+        }
+
+        $productTaxon = $this->productTaxonRepository->findOneByProductCodeAndTaxonCode(
+            $product->getCode(),
+            $taxon->getCode()
+        );
+
+        if (null !== $productTaxon) {
+            return;
+        }
+
+        /** @var ProductTaxonInterface $productTaxon */
+        $productTaxon = $this->productTaxonFactory->createNew();
+        $productTaxon->setTaxon($taxon);
+        $product->addProductTaxon($productTaxon);
     }
 }

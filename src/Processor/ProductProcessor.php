@@ -31,7 +31,7 @@ use Sylius\Component\Taxonomy\Repository\TaxonRepositoryInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-final class ProductProcessor implements ResourceProcessorInterface
+class ProductProcessor implements ResourceProcessorInterface
 {
     /** @var RepositoryInterface */
     private $channelPricingRepository;
@@ -291,33 +291,6 @@ final class ProductProcessor implements ResourceProcessorInterface
         $translation->setSlug($data['link_rewrite']);
     }
 
-    private function setVariant(ProductInterface $product, array $data): void
-    {
-        $productVariant = $this->getProductVariant($product->getCode());
-        $productVariant->setCurrentLocale($data['Locale']);
-        $productVariant->setName(substr($data['Name'], 0, 255));
-
-        $channels = \explode('|', $data['Channels']);
-        foreach ($channels as $channelCode) {
-            $channelPricing = $this->channelPricingRepository->findOneBy([
-                'channelCode' => $channelCode,
-                'productVariant' => $productVariant,
-            ]);
-
-            if (null === $channelPricing) {
-                /** @var ChannelPricingInterface $channelPricing */
-                $channelPricing = $this->channelPricingFactory->createNew();
-                $channelPricing->setChannelCode($channelCode);
-                $productVariant->addChannelPricing($channelPricing);
-            }
-
-            $channelPricing->setPrice((int) $data['Price']);
-            $channelPricing->setOriginalPrice((int) $data['Price']);
-        }
-
-        $product->addVariant($productVariant);
-    }
-
     private function setAttributeValue(ProductInterface $product, array $data, string $attrCode): void
     {
         /** @var ProductAttribute $productAttr */
@@ -370,53 +343,5 @@ final class ProductProcessor implements ResourceProcessorInterface
         $productTaxon = $this->productTaxonFactory->createNew();
         $productTaxon->setTaxon($taxon);
         $product->addProductTaxon($productTaxon);
-    }
-
-    private function setImage(ProductInterface $product, array $data): void
-    {
-        $productImageCodes = $this->imageTypesProvider->getProductImagesCodesList();
-        foreach ($productImageCodes as $imageType) {
-            /** @var ProductImageInterface $productImage */
-            $productImageByType = $product->getImagesByType($imageType);
-
-            // remove old images if import is empty
-            foreach ($productImageByType as $productImage) {
-                if (empty($data[ImageTypesProvider::IMAGES_PREFIX . $imageType])) {
-                    if ($productImage !== null) {
-                        $product->removeImage($productImage);
-                    }
-
-                    continue;
-                }
-            }
-
-            if (empty($data[ImageTypesProvider::IMAGES_PREFIX . $imageType])) {
-                continue;
-            }
-
-            if (count($productImageByType) === 0) {
-                /** @var ProductImageInterface $productImage */
-                $productImage = $this->productImageFactory->createNew();
-            } else {
-                $productImage = $productImageByType->first();
-            }
-
-            $productImage->setType($imageType);
-            $productImage->setPath($data[ImageTypesProvider::IMAGES_PREFIX . $imageType]);
-            $product->addImage($productImage);
-        }
-
-        // create image if import has new one
-        foreach ($this->imageTypesProvider->extractImageTypeFromImport(\array_keys($data)) as $imageType) {
-            if (\in_array($imageType, $productImageCodes) || empty($data[ImageTypesProvider::IMAGES_PREFIX . $imageType])) {
-                continue;
-            }
-
-            /** @var ProductImageInterface $productImage */
-            $productImage = $this->productImageFactory->createNew();
-            $productImage->setType($imageType);
-            $productImage->setPath($data[ImageTypesProvider::IMAGES_PREFIX . $imageType]);
-            $product->addImage($productImage);
-        }
     }
 }

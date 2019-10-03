@@ -60,7 +60,7 @@ class ResourceImporter implements ImporterInterface
 
         $this->result->start();
 
-        if($reader->hasErrors()) {
+        if ($reader->hasErrors()) {
             return null;
         }
 
@@ -91,7 +91,7 @@ class ResourceImporter implements ImporterInterface
                 $this->batchCount = 0;
             }
         } catch (ItemIncompleteException $e) {
-            dump($e);die;
+            dump($e);
             $this->result->setMessage($e->getMessage());
             $this->result->getLogger()->critical($e->getMessage());
             if ($this->failOnIncomplete) {
@@ -103,7 +103,7 @@ class ResourceImporter implements ImporterInterface
                 $this->result->skipped($i);
             }
         } catch (ImporterException $e) {
-            dump($e);die;
+            dump($e);
             $this->result->failed($i);
             $this->result->setMessage($e->getMessage());
             $this->result->getLogger()->critical($e->getMessage());

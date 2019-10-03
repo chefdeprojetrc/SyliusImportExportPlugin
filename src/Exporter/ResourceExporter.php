@@ -79,7 +79,6 @@ class ResourceExporter implements ResourceExporterInterface
                 $this->writeDataForId((string) $id, $locale);
             }
         }
-
     }
 
     /**
@@ -94,7 +93,6 @@ class ResourceExporter implements ResourceExporterInterface
         $this->writer->write($this->resourceKeys);
 
         $exportIdDataArray = [];
-
         foreach ($idsToExport as $id) {
             $exportIdDataArray[$locale.'-'.$id] = $this->getDataForId((string) $id, $locale);
         }
@@ -109,9 +107,6 @@ class ResourceExporter implements ResourceExporterInterface
         $this->writer->write($dataForId);
     }
 
-    /**
-     * @return array[]
-     */
     protected function getDataForId(string $id, string $locale): array
     {
         $data = $this->pluginPool->getDataForId($id, $locale);

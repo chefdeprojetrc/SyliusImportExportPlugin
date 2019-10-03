@@ -30,6 +30,7 @@ final class ProductPluginPool extends PluginPool
         $this->exportKeys = \array_merge($this->exportKeys, $this->attributeCodesProvider->getAttributeCodesList());
         $this->exportKeys = \array_merge($this->exportKeys, $this->imageTypesProvider->getProductImagesCodesWithPrefixList());
         $this->exportKeysAvailable = $this->exportKeys;
+
         parent::initPlugins($ids, $locale);
     }
 }

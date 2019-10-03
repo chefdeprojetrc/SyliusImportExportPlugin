@@ -10,17 +10,13 @@ use Sylius\Component\Attribute\Model\AttributeValueInterface;
 use Sylius\Component\Core\Model\ImageInterface;
 use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
+use Sylius\Component\Resource\Model\ResourceInterface;
 use Sylius\Component\Resource\Model\TranslationInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-final class ProductVariantResourcePlugin extends ResourcePlugin
+final class ProductVariantResourcePlugin extends ProductResourcePlugin
 {
-    /** @var RepositoryInterface */
-    private $channelPricingRepository;
-    /** @var RepositoryInterface */
-    private $productVariantRepository;
-
     public function __construct(
         RepositoryInterface $repository,
         PropertyAccessorInterface $propertyAccessor,
@@ -28,33 +24,25 @@ final class ProductVariantResourcePlugin extends ResourcePlugin
         RepositoryInterface $channelPricingRepository,
         RepositoryInterface $productVariantRepository
     ) {
-        parent::__construct($repository, $propertyAccessor, $entityManager);
-        $this->channelPricingRepository = $channelPricingRepository;
-        $this->productVariantRepository = $productVariantRepository;
+        parent::__construct($repository, $propertyAccessor, $entityManager, $channelPricingRepository, $productVariantRepository);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function init(array $idsToExport, string $locale): void
+    protected function getDataForSingleResource(ResourceInterface $resource): void
     {
-        $this->resources = $this->findResources($idsToExport);
-        $this->locale = $locale;
+        if(is_subclass_of($resource, ProductVariantInterface::class)) {
+            parent::getDataForSingleResource($resource->getProduct());
 
-        /** @var ProductInterface $resource */
-        foreach ($this->resources as $resource) {
-            $this->addTranslationData($resource, $locale);
+            $this->addTranslationData($resource, $this->locale);
 
-            $this->addDataForResource($resource, 'Product_code', $resource->getProduct()->getCode());
-            $this->addDataForResource($resource, 'Code', $resource->getCode());
-            $this->addDataForResource($resource, 'Ean', $resource->getEan());
-            $this->addDataForResource($resource, 'CodeGalitt', $resource->getCodeGalitt());
-            $this->addDataForResource($resource, 'ShippingCategory', $resource->getShippingCategory()->getCode());
-            $this->addDataForResource($resource, 'ShippingRequired', $resource->isShippingRequired());
-            $this->addDataForResource($resource, 'ShippingHeight', $resource->getShippingHeight());
-            $this->addDataForResource($resource, 'ShippingWidth', $resource->getShippingWidth());
-            $this->addDataForResource($resource, 'ShippingDepth', $resource->getShippingDepth());
-            $this->addDataForResource($resource, 'ShippingWeight', $resource->getShippingWeight());
+            $this->addDataForResource($resource, 'Variant_Code', $resource->getCode());
+            $this->addDataForResource($resource, 'Variant_Ean', $resource->getEan());
+            $this->addDataForResource($resource, 'Variant_CodeGalitt', $resource->getCodeGalitt());
+            $this->addDataForResource($resource, 'Variant_ShippingCategory', $resource->getShippingCategory()->getCode());
+            $this->addDataForResource($resource, 'Variant_ShippingRequired', $resource->isShippingRequired());
+            $this->addDataForResource($resource, 'Variant_ShippingHeight', $resource->getShippingHeight());
+            $this->addDataForResource($resource, 'Variant_ShippingWidth', $resource->getShippingWidth());
+            $this->addDataForResource($resource, 'Variant_ShippingDepth', $resource->getShippingDepth());
+            $this->addDataForResource($resource, 'Variant_ShippingWeight', $resource->getShippingWeight());
 
             $this->addPriceData($resource);
         }
@@ -64,8 +52,7 @@ final class ProductVariantResourcePlugin extends ResourcePlugin
     {
         $translation = $resource->getTranslation($locale);
 
-        $this->addDataForResource($resource, 'Locale', $translation->getLocale());
-        $this->addDataForResource($resource, 'Name', $translation->getName());
+        $this->addDataForResource($resource, 'Variant_Name', $translation->getName());
     }
 
     private function addPriceData(ProductVariantInterface $resource): void
@@ -78,7 +65,7 @@ final class ProductVariantResourcePlugin extends ResourcePlugin
                 'productVariant' => $resource,
             ]);
 
-            $this->addDataForResource($resource, 'Price_'.$channel->getCode(), $channelPricing->getPrice());
+            $this->addDataForResource($resource, 'Variant_Price_'.$channel->getCode(), $channelPricing->getPrice());
         }
     }
 }

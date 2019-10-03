@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Resource\Model\ResourceInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -45,10 +46,11 @@ class ResourcePlugin implements PluginInterface
     /**
      * {@inheritdoc}
      */
-    public function getData(string $id, string $locale, array $keysToExport): array
+    public function getData(string $id, string $locale, array $keysToExport): ?array
     {
+        //dump($this->data);
         if (!isset($this->data[$id])) {
-            throw new \InvalidArgumentException(sprintf('Requested ID "%s", but it does not exist', $id));
+            return [];
         }
 
         $result = [];
@@ -71,11 +73,17 @@ class ResourcePlugin implements PluginInterface
     {
         $this->resources = $this->findResources($idsToExport);
         $this->locale = $locale;
+    }
 
+    public function getDataForResources(): void {
+        /** @var ResourceInterface $resource */
         foreach ($this->resources as $resource) {
-            /** @var ResourceInterface $resource */
-            $this->addDataForId($resource);
+            $this->getDataForSingleResource($resource);
         }
+    }
+
+    protected function getDataForSingleResource(ResourceInterface $resource): void {
+        $this->addDataForId($resource);
     }
 
     /**
@@ -108,9 +116,7 @@ class ResourcePlugin implements PluginInterface
 
     private function addDataForId(ResourceInterface $resource): void
     {
-        dump($resource);
         $fields = $this->entityManager->getClassMetadata(\get_class($resource));
-
         foreach ($fields->getFieldNames() as $index => $field) {
             $this->fieldNames[$index] = ucfirst($field);
 
