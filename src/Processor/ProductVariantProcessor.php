@@ -320,7 +320,7 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $translation->setShortDescription($data['Short_Description']);
         $translation->setMetaDescription($data['Meta_Description']);
         $translation->setMetaKeywords($data['Meta_keywords']);
-        $translation->setSlug($data['link_rewrite']);
+        $translation->setSlug($this->getValidSlug($data['link_rewrite']));
     }
 
     private function setVariant(ProductInterface $product, array $data): void
@@ -391,5 +391,19 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $productTaxon = $this->productTaxonFactory->createNew();
         $productTaxon->setTaxon($taxon);
         $product->addProductTaxon($productTaxon);
+    }
+
+    private function getValidSlug(string $name): string
+    {
+        $basicSlug = $this->slugify->slugify($name);
+        if (isset($this->slugs[$basicSlug])) {
+            $this->slugs[$basicSlug] = $this->slugs[$basicSlug] + 1;
+
+            return $basicSlug.'-'.$this->slugs[$basicSlug];
+        }
+
+        $this->slugs[$basicSlug] = 0;
+
+        return $basicSlug;
     }
 }
