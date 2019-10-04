@@ -16,7 +16,7 @@ use Sylius\Component\Resource\Repository\RepositoryInterface;
 
 class PaymentMethodProcessorSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         PaymentMethodFactoryInterface $factory,
         RepositoryInterface $repository,
         MetadataValidatorInterface $metadataValidator,
@@ -25,17 +25,17 @@ class PaymentMethodProcessorSpec extends ObjectBehavior
         $this->beConstructedWith($factory, $repository, $metadataValidator, $entityManager, []);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(PaymentMethodProcessor::class);
     }
 
-    function it_implements_the_resource_processor_interface()
+    public function it_implements_the_resource_processor_interface()
     {
         $this->shouldImplement(ResourceProcessorInterface::class);
     }
 
-    function it_can_process_an_array_of_payment_method_data(
+    public function it_can_process_an_array_of_payment_method_data(
         PaymentMethodFactoryInterface $factory,
         PaymentMethodInterface $paymentMethod,
         GatewayConfigInterface $gatewayConfig,

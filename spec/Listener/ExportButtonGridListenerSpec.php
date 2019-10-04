@@ -16,17 +16,17 @@ use Webmozart\Assert\Assert;
 
 class ExportButtonGridListenerSpec extends ObjectBehavior
 {
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ExportButtonGridListener::class);
     }
 
-    function let()
+    public function let()
     {
         $this->beConstructedWith('country', ['csv', 'xlsx']);
     }
 
-    function it_should_add_the_export_action(
+    public function it_should_add_the_export_action(
         RequestStack $requestStack,
         Request $request
     ) {
@@ -51,7 +51,7 @@ class ExportButtonGridListenerSpec extends ObjectBehavior
         Assert::count($action->getOptions()['links'], 2);
     }
 
-    function it_should_add_the_export_action_when_main_action_group_is_not_present(
+    public function it_should_add_the_export_action_when_main_action_group_is_not_present(
         RequestStack $requestStack,
         Request $request
     ) {

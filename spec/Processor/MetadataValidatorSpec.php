@@ -11,17 +11,17 @@ use PhpSpec\ObjectBehavior;
 
 class MetadataValidatorSpec extends ObjectBehavior
 {
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(MetadataValidator::class);
     }
 
-    function it_implements_the_metadata_validator_interface()
+    public function it_implements_the_metadata_validator_interface()
     {
         $this->shouldImplement(MetadataValidatorInterface::class);
     }
 
-    function it_can_validate_the_presence_of_header_keys_in_given_dataset_array_with_exact_these_keys()
+    public function it_can_validate_the_presence_of_header_keys_in_given_dataset_array_with_exact_these_keys()
     {
         $headerKeys = ['headerKey1', 'headerKey2', 'headerKey3'];
         $dataset = ['headerKey1' => 'value1', 'headerKey2' => 'value2', 'headerKey3' => 'value3'];
@@ -30,7 +30,7 @@ class MetadataValidatorSpec extends ObjectBehavior
             ->during('validateHeaders', [$headerKeys, $dataset]);
     }
 
-    function it_can_validate_the_presence_of_header_keys_in_given_dataset_array_with_additional_keys()
+    public function it_can_validate_the_presence_of_header_keys_in_given_dataset_array_with_additional_keys()
     {
         $headerKeys = ['headerKey1', 'headerKey2', 'headerKey3'];
         $dataset = ['headerKey1' => 'value1', 'headerKey2' => 'value2', 'headerKey3' => 'value3', 'headerKey4' => 'value4'];
@@ -39,7 +39,7 @@ class MetadataValidatorSpec extends ObjectBehavior
             ->during('validateHeaders', [$headerKeys, $dataset]);
     }
 
-    function it_can_validate_the_absence_of_header_keys_in_given_dataset_array()
+    public function it_can_validate_the_absence_of_header_keys_in_given_dataset_array()
     {
         $headerKeys = ['headerKey1', 'headerKey2', 'headerKey3'];
         $dataset = ['WrongheaderKey1' => 'value1', 'headerKey2' => 'value2', 'headerKey3' => 'value3'];

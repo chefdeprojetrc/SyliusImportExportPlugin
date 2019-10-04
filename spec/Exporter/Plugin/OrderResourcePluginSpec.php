@@ -26,7 +26,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 class OrderResourcePluginSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         RepositoryInterface $repository,
         PropertyAccessorInterface $propertyAccessor,
         EntityManagerInterface $entityManager,
@@ -36,17 +36,17 @@ class OrderResourcePluginSpec extends ObjectBehavior
         $this->beConstructedWith($repository, $propertyAccessor, $entityManager, $addressConcatenation, $hydrator);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(OrderResourcePlugin::class);
     }
 
-    function it_implements_the_resource_plugin_interface()
+    public function it_implements_the_resource_plugin_interface()
     {
         $this->shouldImplement(ResourcePlugin::class);
     }
 
-    function it_should_add_customer_data(
+    public function it_should_add_customer_data(
         EntityManagerInterface $entityManager,
         OrderInterface $resource,
         PropertyAccessorInterface $propertyAccessor,

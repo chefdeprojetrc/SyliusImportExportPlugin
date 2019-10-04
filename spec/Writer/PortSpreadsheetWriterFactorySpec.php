@@ -11,17 +11,17 @@ use Port\Spreadsheet\SpreadsheetWriter;
 
 class PortSpreadsheetWriterFactorySpec extends ObjectBehavior
 {
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(PortSpreadsheetWriterFactory::class);
     }
 
-    function it_implements_the_writer_factory_interface()
+    public function it_implements_the_writer_factory_interface()
     {
         $this->shouldImplement(PortSpreadsheetWriterFactoryInterface::class);
     }
 
-    function it_returns_class()
+    public function it_returns_class()
     {
         $this->get('test')->shouldReturnAnInstanceOf(SpreadsheetWriter::class);
     }

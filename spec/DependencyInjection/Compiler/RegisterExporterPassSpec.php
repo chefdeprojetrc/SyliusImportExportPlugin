@@ -14,17 +14,17 @@ use Symfony\Component\DependencyInjection\Definition;
 
 class RegisterExporterPassSpec extends ObjectBehavior
 {
-    function it_is_a_compiler_pass(): void
+    public function it_is_a_compiler_pass(): void
     {
         $this->shouldImplement(CompilerPassInterface::class);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(RegisterExporterPass::class);
     }
 
-    function it_processes_the_exporter_services(
+    public function it_processes_the_exporter_services(
         ContainerBuilder $container,
         Definition $exporterRegistry,
         Definition $blockEventDefinition
@@ -63,15 +63,17 @@ class RegisterExporterPassSpec extends ObjectBehavior
         $blockEventDefinition->addMethodCall('setRequest', Argument::that(function ($input) {
             return is_array($input);
         }))->willReturn($blockEventDefinition);
-        $blockEventDefinition->addTag('kernel.event_listener',
+        $blockEventDefinition->addTag(
+            'kernel.event_listener',
             [
                 'event' => \sprintf('sylius.grid.admin_%s', $exporterType),
                 'method' => 'onSyliusGridAdmin',
-            ])->willReturn($blockEventDefinition);
+            ]
+        )->willReturn($blockEventDefinition);
 
         $exporterRegistry->addMethodCall(
-           'register',
-           Argument::type('array')
+            'register',
+            Argument::type('array')
        )->shouldBeCalled();
 
         /**

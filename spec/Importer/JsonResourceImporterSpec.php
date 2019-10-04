@@ -15,7 +15,7 @@ use Prophecy\Argument;
 
 class JsonResourceImporterSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ObjectManager $objectManager,
         ResourceProcessorInterface $resourceProcessor,
         ImportResultLoggerInterface $importerResult
@@ -23,17 +23,17 @@ class JsonResourceImporterSpec extends ObjectBehavior
         $this->beConstructedWith($objectManager, $resourceProcessor, $importerResult, 0, false, false);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(JsonResourceImporter::class);
     }
 
-    function it_implements_the_importer_interface()
+    public function it_implements_the_importer_interface()
     {
         $this->shouldImplement(ResourceImporter::class);
     }
 
-    function it_imports_countries_from_json_file(
+    public function it_imports_countries_from_json_file(
         ObjectManager $objectManager,
         ResourceProcessorInterface $resourceProcessor,
         ImporterResultInterface $importerResult
@@ -48,7 +48,7 @@ class JsonResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/countries.json')->shouldReturn($importerResult);
     }
 
-    function it_imports_tax_categories_from_json_file(
+    public function it_imports_tax_categories_from_json_file(
         ObjectManager $objectManager,
         ImporterResultInterface $importerResult,
         ResourceProcessorInterface $resourceProcessor
@@ -63,7 +63,7 @@ class JsonResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/tax_categories.json')->shouldReturn($importerResult);
     }
 
-    function it_imports_customer_groups_from_json_file(
+    public function it_imports_customer_groups_from_json_file(
         ObjectManager $objectManager,
         ImporterResultInterface $importerResult,
         ResourceProcessorInterface $resourceProcessor

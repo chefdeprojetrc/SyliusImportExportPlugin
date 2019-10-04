@@ -12,23 +12,23 @@ use Prophecy\Argument;
 
 class SpreadsheetWriterSpec extends ObjectBehavior
 {
-    function let(PortSpreadsheetWriterFactoryInterface $spreadsheetWriterFactory, SpreadsheetWriter $spreadsheetWriter)
+    public function let(PortSpreadsheetWriterFactoryInterface $spreadsheetWriterFactory, SpreadsheetWriter $spreadsheetWriter)
     {
         $this->beConstructedWith($spreadsheetWriterFactory);
         $spreadsheetWriterFactory->get(Argument::type('string'))->willReturn($spreadsheetWriter);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(SpreadsheetWriter::class);
     }
 
-    function it_implements_the_writer_interface()
+    public function it_implements_the_writer_interface()
     {
         $this->shouldImplement(WriterInterface::class);
     }
 
-    function it_delegates_the_data_to_the_wrapped_writer(\Port\Spreadsheet\SpreadsheetWriter $spreadsheetWriter)
+    public function it_delegates_the_data_to_the_wrapped_writer(\Port\Spreadsheet\SpreadsheetWriter $spreadsheetWriter)
     {
         $data = [
             'key1' => 'value1',

@@ -19,22 +19,22 @@ use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
  */
 class ResourceExporterSpec extends ObjectBehavior
 {
-    function let(WriterInterface $writer, PluginPoolInterface $pluginPool)
+    public function let(WriterInterface $writer, PluginPoolInterface $pluginPool)
     {
         $this->beConstructedWith($writer, $pluginPool, ['key1', 'key2'], null);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ResourceExporter::class);
     }
 
-    function it_implements_the_resource_exporter_interface()
+    public function it_implements_the_resource_exporter_interface()
     {
         $this->shouldImplement(ResourceExporterInterface::class);
     }
 
-    function it_should_export_but_also_transform(
+    public function it_should_export_but_also_transform(
         WriterInterface $writer,
         PluginPoolInterface $pluginPool,
         PluginInterface $plugin
@@ -86,7 +86,7 @@ class ResourceExporterSpec extends ObjectBehavior
         $this->export(['id_of_data']);
     }
 
-    function it_exports_key_value_data_with_1_plugin(
+    public function it_exports_key_value_data_with_1_plugin(
         WriterInterface $writer,
         PluginPoolInterface $pluginPool,
         PluginInterface $plugin
