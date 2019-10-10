@@ -260,7 +260,7 @@ services:
         class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\ProductPluginPool
         arguments:
             - ["@sylius.exporter.plugin.resource.products"]
-            - ['Code', 'Locale', 'Name', 'Description', 'Short_description', 'Meta_description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels', 'Enabled', 'Price', 'Ecoffret']
+            - ['Code', 'Locale', 'Name', 'Description', 'Reference', 'Short_description', 'Meta_description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels', 'Enabled', 'Price', 'Ecoffret']
             - "@sylius.service.attributes_code"
             - "@sylius.service.product_image_code"
 
@@ -409,7 +409,8 @@ services:
             - "@doctrine.orm.entity_manager"
             - "@sylius.factory.product_translation"
             - "@sylius.repository.shipping_category"
-            - ['Locale','Product_code','Name','Code','Ean','CodeGalitt','ShippingCategory','ShippingRequired','ShippingHeight','ShippingWidth','ShippingDepth','ShippingWeight','Price_FR_WEB', 'Price_CH_WEB', 'Price_IT_WEB']
+            - ['Locale','Product_code','Name','Code','Ean','CodeGalitt','ShippingCategory','ShippingRequired','ShippingHeight','ShippingWidth','ShippingDepth','ShippingWeight','Price_FR_WEB', 'Price_CH_WEB', 'Price_IT_WEB', 'Options']
+            - "@sylius.repository.product_option"
 
     sylius.class_metadata.product_image:
         class: Doctrine\ORM\Mapping\ClassMetadata

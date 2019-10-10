@@ -31,6 +31,7 @@ use Sylius\Component\Taxonomy\Factory\TaxonFactoryInterface;
 use Sylius\Component\Taxonomy\Repository\TaxonRepositoryInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Sylius\Component\Product\Repository\ProductOptionRepositoryInterface;
 
 final class ProductVariantProcessor implements ResourceProcessorInterface
 {
@@ -90,6 +91,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
     private $syliusShippingCategory;
     /** @var Slugify  */
     private $slugify;
+    /** @var ProductOptionRepositoryInterface */
+    private $productOptionRepository;
 
     public function __construct(
         ProductFactoryInterface $productFactory,
@@ -116,7 +119,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         EntityManagerInterface $manager,
         FactoryInterface $syliusFactoryProductTranslation,
         RepositoryInterface $syliusShippingCategory,
-        array $headerKeys
+        array $headerKeys,
+        ProductOptionRepositoryInterface $productOptionRepository
     ) {
         $this->resourceProductFactory = $productFactory;
         $this->resourceTaxonFactory = $taxonFactory;
@@ -144,6 +148,7 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $this->productTranslationFactory = $syliusFactoryProductTranslation;
         $this->syliusShippingCategory = $syliusShippingCategory;
         $this->slugify = new Slugify();
+        $this->productOptionRepository = $productOptionRepository;
     }
 
     /**
@@ -182,6 +187,14 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $shippingCategory = $this->syliusShippingCategory->findOneBy(['code' => $data['Variant_ShippingCategory']]);
         $variant->setShippingCategory($shippingCategory);
 
+        if (!empty($data['Options'])) {
+            $options = \explode('|', $data['Options']);
+            $product->setVariantSelectionMethod(ProductInterface::VARIANT_SELECTION_MATCH);
+            foreach ($options as $optionCode) {
+                $product->addOption($this->productOptionRepository->findOneBy(['code' => $optionCode]));
+            }
+        }
+
         foreach ($product->getChannels() as $channel) {
             $channelCode = $channel->getCode();
             $channelPricing = $this->channelPricingRepository->findOneBy([
@@ -208,11 +221,6 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         /** @var ProductInterface|null $product */
         $product = $this->productRepository->findOneBy(['code' => $data['Code']]);
         if (null === $product) {
-            $optionsResolver =
-                (new OptionsResolver())
-                    ->setDefault('products', [])
-                    ->setAllowedTypes('products', 'array');
-
             /** @var ProductInterface $product */
             $product = $this->resourceProductFactory->createNew();
             $product->setCode($data['Code']);
@@ -317,8 +325,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $translation = $product->getTranslation($data['Locale']);
         $translation->setName($data['Name']);
         $translation->setDescription($data['Description']);
-        $translation->setShortDescription($data['Short_Description']);
-        $translation->setMetaDescription($data['Meta_Description']);
+        $translation->setShortDescription($data['Short_description']);
+        $translation->setMetaDescription($data['Meta_description']);
         $translation->setMetaKeywords($data['Meta_keywords']);
         $translation->setSlug($this->getValidSlug($data['link_rewrite']));
     }
