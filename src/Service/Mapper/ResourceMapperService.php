@@ -22,12 +22,10 @@ class ResourceMapperService
     public function map(ResourceInterface $resource): array {
         $fields = $this->entityManager->getClassMetadata(\get_class($resource))->getFieldNames();
 
-        dump($fields);
         if(is_subclass_of($resource, AttributeSubjectInterface::class)) {
-            dump($resource->getAttributesByLocale('fr_FR', 'fr_FR'));
+//            dump($resource->getAttributesByLocale('fr_FR', 'fr_FR'));
         }
 
-die;
         return [];
     }
 }

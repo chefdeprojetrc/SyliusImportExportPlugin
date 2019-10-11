@@ -87,7 +87,7 @@ final class ExportDataCommand extends AbstractDataCommand
 
         /** TODO: Refacto repository management */
         /** @var RepositoryInterface $repository */
-        $repository = $this->container->get('sylius.repository.' . 'product_variant');
+        $repository = $this->container->get('sylius.repository.product_variant');
         $items = $repository->findAll();
 
         $idsToExport = array_map(function (ResourceInterface $item) {
