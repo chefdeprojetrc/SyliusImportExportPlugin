@@ -15,3 +15,5 @@
 
 /tests/Behat/Resources/fixtures/export/*
 !/tests/Behat/Resources/fixtures/export/.gitkeep
+
+\.idea/

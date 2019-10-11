@@ -39,9 +39,9 @@ class OrderResourcePlugin extends ResourcePlugin
     /**
      * {@inheritdoc}
      */
-    public function init(array $idsToExport): void
+    public function init(array $idsToExport, string $locale): void
     {
-        parent::init($idsToExport);
+        parent::init($idsToExport, $locale);
 
         /** @var OrderInterface $resource */
         foreach ($this->resources as $resource) {

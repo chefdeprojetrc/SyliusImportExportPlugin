@@ -13,7 +13,7 @@ use Sylius\Component\Resource\Repository\RepositoryInterface;
 
 class ExportDataControllerSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ServiceRegistryInterface $registry,
         RequestConfigurationFactoryInterface $requestConfigurationFactory,
         ResourcesCollectionProviderInterface $resourcesCollectionProvider,
@@ -28,7 +28,7 @@ class ExportDataControllerSpec extends ObjectBehavior
         );
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ExportDataController::class);
     }

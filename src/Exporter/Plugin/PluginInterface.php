@@ -6,17 +6,20 @@ namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin;
 
 interface PluginInterface
 {
+    public function getDataForResources(): void;
+
     /**
      * @param mixed[] $resourceFields
      *
      * @return mixed[]
      */
-    public function getData(string $id, array $resourceFields): array;
+    public function getData(string $id, string $locale, array $resourceFields): ?array;
 
     /**
      * @param int[] $idsToExport
+     * @param string $locale
      */
-    public function init(array $idsToExport): void;
+    public function init(array $idsToExport, string $locale): void;
 
     /**
      * @return string[]

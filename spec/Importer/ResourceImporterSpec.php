@@ -18,7 +18,7 @@ use Prophecy\Argument;
 
 class ResourceImporterSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ReaderFactory $readerFactory,
         ObjectManager $objectManager,
         ResourceProcessorInterface $resourceProcessor,
@@ -27,17 +27,17 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->beConstructedWith($readerFactory, $objectManager, $resourceProcessor, $importerResult, false, false, false);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ResourceImporter::class);
     }
 
-    function it_implements_the_importer_interface()
+    public function it_implements_the_importer_interface()
     {
         $this->shouldImplement(ImporterInterface::class);
     }
 
-    function it_imports_countries_from_csv_file(
+    public function it_imports_countries_from_csv_file(
         ReaderFactory $readerFactory,
         CsvReader $csvReader,
         ObjectManager $objectManager,
@@ -66,7 +66,7 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/countries.csv')->shouldReturn($importerResult);
     }
 
-    function it_imports_countries_from_spreadsheet_file(
+    public function it_imports_countries_from_spreadsheet_file(
         ReaderFactory $readerFactory,
         SpreadsheetReader $spreadsheetReader,
         ObjectManager $objectManager,
@@ -93,7 +93,7 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/countries.xlsx')->shouldReturn($importerResult);
     }
 
-    function it_imports_tax_categories_from_csv_file(
+    public function it_imports_tax_categories_from_csv_file(
         ReaderFactory $readerFactory,
         CsvReader $csvReader,
         ObjectManager $objectManager,
@@ -121,7 +121,7 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/tax_categories.csv')->shouldReturn($importerResult);
     }
 
-    function it_imports_tax_categories_from_spreadsheet_file(
+    public function it_imports_tax_categories_from_spreadsheet_file(
         ReaderFactory $readerFactory,
         SpreadsheetReader $spreadsheetReader,
         ObjectManager $objectManager,
@@ -149,7 +149,7 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/tax_categories.xlsx')->shouldReturn($importerResult);
     }
 
-    function it_imports_customer_groups_from_csv_file(
+    public function it_imports_customer_groups_from_csv_file(
         ReaderFactory $readerFactory,
         CsvReader $csvReader,
         ObjectManager $objectManager,
@@ -178,7 +178,7 @@ class ResourceImporterSpec extends ObjectBehavior
         $this->import(__DIR__ . '/customer_groups.csv')->shouldReturn($importerResult);
     }
 
-    function it_imports_customer_groups_from_spreadsheet_file(
+    public function it_imports_customer_groups_from_spreadsheet_file(
         ReaderFactory $readerFactory,
         SpreadsheetReader $spreadsheetReader,
         ObjectManager $objectManager,

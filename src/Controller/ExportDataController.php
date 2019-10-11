@@ -60,8 +60,10 @@ final class ExportDataController
 
     private function exportData(Request $request, string $exporter, string $format, string $outputFilename): Response
     {
-        $metadata = Metadata::fromAliasAndConfiguration($exporter,
-            $this->resources[$exporter]);
+        $metadata = Metadata::fromAliasAndConfiguration(
+            $exporter,
+            $this->resources[$exporter]
+        );
         $configuration = $this->requestConfigurationFactory->create($metadata, $request);
 
         $name = ExporterRegistry::buildServiceName($exporter, $format);

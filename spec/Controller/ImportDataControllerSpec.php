@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 class ImportDataControllerSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ServiceRegistryInterface $registry,
         FlashBagInterface $flashBag,
         FormFactoryInterface $formFactory,
@@ -26,7 +26,7 @@ class ImportDataControllerSpec extends ObjectBehavior
         );
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ImportDataController::class);
     }

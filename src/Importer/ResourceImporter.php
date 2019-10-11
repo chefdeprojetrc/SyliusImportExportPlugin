@@ -60,6 +60,10 @@ class ResourceImporter implements ImporterInterface
 
         $this->result->start();
 
+        if ($reader->hasErrors()) {
+            return null;
+        }
+
         foreach ($reader as $i => $row) {
             if ($this->importData((int) $i, $row)) {
                 break;

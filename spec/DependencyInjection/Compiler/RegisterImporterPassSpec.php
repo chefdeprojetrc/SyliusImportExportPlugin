@@ -14,17 +14,17 @@ use Symfony\Component\DependencyInjection\Definition;
 
 class RegisterImporterPassSpec extends ObjectBehavior
 {
-    function it_is_a_compiler_pass(): void
+    public function it_is_a_compiler_pass(): void
     {
         $this->shouldImplement(CompilerPassInterface::class);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(RegisterImporterPass::class);
     }
 
-    function it_processes_the_importer_services(
+    public function it_processes_the_importer_services(
         ContainerBuilder $container,
         Definition $importerRegistry,
         Definition $blockEventDefinition
@@ -71,7 +71,7 @@ class RegisterImporterPassSpec extends ObjectBehavior
 
         $blockEventDefinition->addTag(
             'kernel.event_listener',
-                [
+            [
                     'event' => 'sonata.block.event.sylius.admin.' . $importerType . '.index.after_content',
                     'method' => 'onBlockEvent',
                 ]

@@ -12,29 +12,29 @@ use Symfony\Component\Stopwatch\StopwatchEvent;
 
 class ImporterResultSpec extends ObjectBehavior
 {
-    function let(Stopwatch $stopwatch, LoggerInterface $logger)
+    public function let(Stopwatch $stopwatch, LoggerInterface $logger)
     {
         $this->beConstructedWith($stopwatch, $logger);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ImporterResult::class);
     }
 
-    function it_can_start_the_stopwatch(Stopwatch $stopwatch)
+    public function it_can_start_the_stopwatch(Stopwatch $stopwatch)
     {
         $stopwatch->start('import')->shouldBeCalled();
         $this->start();
     }
 
-    function it_can_stop_the_stopwatch(Stopwatch $stopwatch)
+    public function it_can_stop_the_stopwatch(Stopwatch $stopwatch)
     {
         $stopwatch->stop('import')->shouldBeCalled();
         $this->stop();
     }
 
-    function it_can_gather_successfull_line_numbers()
+    public function it_can_gather_successfull_line_numbers()
     {
         $this->success(1);
         $this->success(2);
@@ -47,7 +47,7 @@ class ImporterResultSpec extends ObjectBehavior
         );
     }
 
-    function it_can_gather_failed_line_numbers()
+    public function it_can_gather_failed_line_numbers()
     {
         $this->success(1);
         $this->success(2);
@@ -60,7 +60,7 @@ class ImporterResultSpec extends ObjectBehavior
         );
     }
 
-    function it_can_gather_skipped_rows()
+    public function it_can_gather_skipped_rows()
     {
         $this->success(1);
         $this->success(2);
@@ -73,7 +73,7 @@ class ImporterResultSpec extends ObjectBehavior
         );
     }
 
-    function it_can_return_the_duration_of_the_import(Stopwatch $stopwatch, StopwatchEvent $stopwatchEvent)
+    public function it_can_return_the_duration_of_the_import(Stopwatch $stopwatch, StopwatchEvent $stopwatchEvent)
     {
         $stopwatch->stop('import')
             ->willReturn($stopwatchEvent);

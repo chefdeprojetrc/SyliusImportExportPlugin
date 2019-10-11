@@ -135,8 +135,12 @@ services:
             - { name: sylius.importer_transformer }
 
     # Commands
+    sylius.command.exchange_data:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Command\AbstractDataCommand
+
     sylius.command.import_data:
         class: FriendsOfSylius\SyliusImportExportPlugin\Command\ImportDataCommand
+        parent: sylius.command.exchange_data
         arguments:
             - "@sylius.importers_registry"
         tags:
@@ -153,8 +157,11 @@ services:
 
     sylius.command.export_data:
         class: FriendsOfSylius\SyliusImportExportPlugin\Command\ExportDataCommand
+        parent: sylius.command.exchange_data
         arguments:
             - "@sylius.exporters_registry"
+            - "@sylius.service.mapper.resource_mapper_service"
+            - "@sylius.locale_provider"
         calls:
             - [ setContainer, ["@service_container"]]
         tags:
@@ -209,6 +216,15 @@ services:
             - '@sylius.repository.channel_pricing'
             - '@sylius.repository.product_variant'
 
+    sylius.exporter.plugin.resource.product_variants:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\ProductVariantResourcePlugin
+        arguments:
+            - "@sylius.repository.product_variant"
+            - "@property_accessor"
+            - "@doctrine.orm.entity_manager"
+            - '@sylius.repository.channel_pricing'
+            - '@sylius.repository.product_variant'
+
     # ORM hydrators to improve performance
     sylius.exporter.orm.hydrator.orders:
         class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\ORM\Hydrator\OrderHydrator
@@ -244,7 +260,15 @@ services:
         class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\ProductPluginPool
         arguments:
             - ["@sylius.exporter.plugin.resource.products"]
-            - ['Code', 'Locale', 'Name', 'Description', 'Short_description', 'Meta_description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels', 'Enabled', 'Price']
+            - ['Code', 'Locale', 'Name', 'Description', 'Reference', 'Short_description', 'Meta_description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels', 'Enabled', 'Price', 'Ecoffret']
+            - "@sylius.service.attributes_code"
+            - "@sylius.service.product_image_code"
+
+    sylius.exporter.pluginpool.product_variants:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin\ProductPluginPool
+        arguments:
+            - ["@sylius.exporter.plugin.resource.product_variants"]
+            - ['Locale', 'Code', 'Name', 'Label', 'Description', 'Short_Description', 'Meta_Description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels',  'Enabled',  'Price', 'VariantSelectionMethod','Ecoffret','Orderable','Listed','Reference','RetailCategory','HexColorCode','id_shop','link_rewrite','textintro','nbetab','nbpeople','excluweb','Variant_Name', 'Variant_Code', 'Variant_Ean', 'Variant_CodeGalitt', 'Variant_ShippingCategory', 'Variant_ShippingRequired', 'Variant_ShippingHeight', 'Variant_ShippingWidth', 'Variant_ShippingDepth', 'Variant_ShippingWeight', 'Variant_Price_FR_WEB', 'Variant_Price_CH_WEB', 'Variant_Price_IT_WEB']
             - "@sylius.service.attributes_code"
             - "@sylius.service.product_image_code"
 
@@ -273,6 +297,11 @@ services:
         class: FriendsOfSylius\SyliusImportExportPlugin\Service\ImageTypesProvider
         arguments:
             - "@sylius.repository.product_image"
+
+    sylius.service.mapper.resource_mapper_service:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Service\Mapper\ResourceMapperService
+        arguments:
+            - "@doctrine.orm.entity_manager"
 
     # generic ResourceProcessors, which can work with just Property-Accessors
     sylius.processor.countries:
@@ -350,7 +379,38 @@ services:
             - "@sylius.generator.slug"
             - "@sylius.importers_transformer_pool"
             - "@doctrine.orm.entity_manager"
+            - "@sylius.factory.product_translation"
             - ['Code', 'Locale', 'Name', 'Description', 'Short_description', 'Meta_description', 'Meta_keywords', 'Main_taxon', 'Taxons', 'Channels', 'Enabled', 'Price']
+
+    sylius.processor.product_variants:
+        class: FriendsOfSylius\SyliusImportExportPlugin\Processor\ProductVariantProcessor
+        arguments:
+            - "@sylius.custom_factory.product"
+            - "@sylius.custom_factory.taxon"
+            - "@sylius.repository.product"
+            - "@sylius.repository.taxon"
+            - "@sylius.importer.metadata_validator"
+            - "@property_accessor"
+            - "@sylius.repository.product_attribute"
+            - "@sylius.service.attributes_code"
+            - "@sylius.factory.product_attribute_value"
+            - "@sylius.repository.channel"
+            - '@sylius.factory.product_taxon'
+            - '@sylius.factory.product_image'
+            - '@sylius.factory.product_variant'
+            - '@sylius.factory.channel_pricing'
+            - '@sylius.repository.product_taxon'
+            - '@sylius.repository.product_image'
+            - '@sylius.repository.product_variant'
+            - '@sylius.repository.channel_pricing'
+            - '@sylius.service.product_image_code'
+            - "@sylius.generator.slug"
+            - "@sylius.importers_transformer_pool"
+            - "@doctrine.orm.entity_manager"
+            - "@sylius.factory.product_translation"
+            - "@sylius.repository.shipping_category"
+            - ['Locale','Product_code','Name','Code','Ean','CodeGalitt','ShippingCategory','ShippingRequired','ShippingHeight','ShippingWidth','ShippingDepth','ShippingWeight','Price_FR_WEB', 'Price_CH_WEB', 'Price_IT_WEB', 'Options']
+            - "@sylius.repository.product_option"
 
     sylius.class_metadata.product_image:
         class: Doctrine\ORM\Mapping\ClassMetadata

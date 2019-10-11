@@ -11,24 +11,24 @@ use PhpSpec\ObjectBehavior;
 
 class PluginPoolSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         PluginInterface $plugin1,
         PluginInterface $plugin2
     ) {
         $this->beConstructedWith([$plugin1, $plugin2], ['description', 'name']);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(PluginPool::class);
     }
 
-    function it_implements_the_plugin_pool_interface()
+    public function it_implements_the_plugin_pool_interface()
     {
         $this->shouldImplement(PluginPoolInterface::class);
     }
 
-    function it_returns_array_of_plugins_after_creation(
+    public function it_returns_array_of_plugins_after_creation(
         PluginInterface $plugin1,
         PluginInterface $plugin2
     ) {
@@ -42,7 +42,7 @@ class PluginPoolSpec extends ObjectBehavior
             );
     }
 
-    function it_inits_plugins_with_ids(
+    public function it_inits_plugins_with_ids(
         PluginInterface $plugin1,
         PluginInterface $plugin2
     ) {
@@ -60,7 +60,7 @@ class PluginPoolSpec extends ObjectBehavior
         $this->initPlugins($ids);
     }
 
-    function it_gets_correct_data_from_multiple_plugins(
+    public function it_gets_correct_data_from_multiple_plugins(
         PluginInterface $plugin1,
         PluginInterface $plugin2
     ) {
@@ -75,7 +75,7 @@ class PluginPoolSpec extends ObjectBehavior
         $plugin2
             ->getData('id1', ['description', 'name'])
             ->willReturn(
-              [
+                [
                   'description' => 'this is a description',
                   'name' => '',
               ]
@@ -93,7 +93,7 @@ class PluginPoolSpec extends ObjectBehavior
             );
     }
 
-    function it_errors_if_not_all_keys_are_serviced(PluginInterface $plugin1)
+    public function it_errors_if_not_all_keys_are_serviced(PluginInterface $plugin1)
     {
         $this->beConstructedWith([$plugin1], ['description', 'name', 'blabla']);
 

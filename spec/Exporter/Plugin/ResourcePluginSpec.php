@@ -17,7 +17,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 class ResourcePluginSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         RepositoryInterface $repository,
         PropertyAccessorInterface $propertyAccessor,
         EntityManagerInterface $entityManager
@@ -25,17 +25,17 @@ class ResourcePluginSpec extends ObjectBehavior
         $this->beConstructedWith($repository, $propertyAccessor, $entityManager);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ResourcePlugin::class);
     }
 
-    function it_implements_the_resource_plugin_interface()
+    public function it_implements_the_resource_plugin_interface()
     {
         $this->shouldImplement(PluginInterface::class);
     }
 
-    function it_loads_data_for_tax_category_on_init(
+    public function it_loads_data_for_tax_category_on_init(
         RepositoryInterface $repository,
         TaxCategoryInterface $taxCategoryBooks,
         TaxCategoryInterface $taxCategoryCars,

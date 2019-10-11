@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FriendsOfSylius\SyliusImportExportPlugin\Exporter\Plugin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Resource\Model\ResourceInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -29,6 +30,9 @@ class ResourcePlugin implements PluginInterface
     /** @var ResourceInterface[] */
     protected $resources;
 
+    /** @var string */
+    protected $locale;
+
     public function __construct(
         RepositoryInterface $repository,
         PropertyAccessorInterface $propertyAccessor,
@@ -42,17 +46,18 @@ class ResourcePlugin implements PluginInterface
     /**
      * {@inheritdoc}
      */
-    public function getData(string $id, array $keysToExport): array
+    public function getData(string $id, string $locale, array $keysToExport): ?array
     {
+        //dump($this->data);
         if (!isset($this->data[$id])) {
-            throw new \InvalidArgumentException(sprintf('Requested ID "%s", but it does not exist', $id));
+            return [];
         }
 
         $result = [];
 
         foreach ($keysToExport as $exportKey) {
-            if ($this->hasPluginDataForExportKey($id, $exportKey)) {
-                $result[$exportKey] = $this->getDataForExportKey($id, $exportKey);
+            if ($this->hasPluginDataForExportKey($id, $locale, $exportKey)) {
+                $result[$exportKey] = $this->getDataForExportKey($id, $locale, $exportKey);
             } else {
                 $result[$exportKey] = '';
             }
@@ -64,14 +69,21 @@ class ResourcePlugin implements PluginInterface
     /**
      * {@inheritdoc}
      */
-    public function init(array $idsToExport): void
+    public function init(array $idsToExport, string $locale): void
     {
         $this->resources = $this->findResources($idsToExport);
+        $this->locale = $locale;
+    }
 
+    public function getDataForResources(): void {
+        /** @var ResourceInterface $resource */
         foreach ($this->resources as $resource) {
-            /** @var ResourceInterface $resource */
-            $this->addDataForId($resource);
+            $this->getDataForSingleResource($resource);
         }
+    }
+
+    protected function getDataForSingleResource(ResourceInterface $resource): void {
+        $this->addDataForId($resource);
     }
 
     /**
@@ -82,30 +94,29 @@ class ResourcePlugin implements PluginInterface
         return $this->fieldNames;
     }
 
-    protected function hasPluginDataForExportKey(string $id, string $exportKey): bool
+    protected function hasPluginDataForExportKey(string $id, string $locale, string $exportKey): bool
     {
-        return isset($this->data[$id][$exportKey]);
+        return isset($this->data[$id][$locale][$exportKey]);
     }
 
-    protected function getDataForResourceAndExportKey(ResourceInterface $resource, string $exportKey)
+    protected function getDataForResourceAndExportKey(ResourceInterface $resource, string $locale, string $exportKey)
     {
-        return $this->getDataForExportKey((string) $resource->getId(), $exportKey);
+        return $this->getDataForExportKey((string) $resource->getId(), $locale, $exportKey);
     }
 
-    protected function getDataForExportKey(string $id, string $exportKey)
+    protected function getDataForExportKey(string $id, string $locale, string $exportKey)
     {
-        return $this->data[$id][$exportKey];
+        return $this->data[$id][$locale][$exportKey];
     }
 
     protected function addDataForResource(ResourceInterface $resource, string $field, $value): void
     {
-        $this->data[$resource->getId()][$field] = $value;
+        $this->data[$resource->getId()][$this->locale][$field] = $value;
     }
 
     private function addDataForId(ResourceInterface $resource): void
     {
         $fields = $this->entityManager->getClassMetadata(\get_class($resource));
-
         foreach ($fields->getFieldNames() as $index => $field) {
             $this->fieldNames[$index] = ucfirst($field);
 

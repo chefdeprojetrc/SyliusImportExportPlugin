@@ -10,15 +10,17 @@ use Sylius\Component\Attribute\Model\AttributeValueInterface;
 use Sylius\Component\Core\Model\ImageInterface;
 use Sylius\Component\Core\Model\ProductInterface;
 use Sylius\Component\Core\Model\ProductVariantInterface;
+use Sylius\Component\Resource\Model\ResourceInterface;
+use Sylius\Component\Resource\Model\TranslationInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-final class ProductResourcePlugin extends ResourcePlugin
+class ProductResourcePlugin extends ResourcePlugin
 {
     /** @var RepositoryInterface */
-    private $channelPricingRepository;
+    protected $channelPricingRepository;
     /** @var RepositoryInterface */
-    private $productVariantRepository;
+    protected $productVariantRepository;
 
     public function __construct(
         RepositoryInterface $repository,
@@ -32,27 +34,25 @@ final class ProductResourcePlugin extends ResourcePlugin
         $this->productVariantRepository = $productVariantRepository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function init(array $idsToExport): void
-    {
-        parent::init($idsToExport);
+    protected function getDataForSingleResource(ResourceInterface $resource): void {
+        if(is_subclass_of($resource, ProductInterface::class)) {
+            /** @var ProductInterface $resource */
+            $this->addDataForResource($resource, 'Code', $resource->getCode());
 
-        /** @var ProductInterface $resource */
-        foreach ($this->resources as $resource) {
-            $this->addTranslationData($resource);
+            $this->addTranslationData($resource, $this->locale);
             $this->addTaxonData($resource);
-            $this->addAttributeData($resource);
+            $this->addAttributeData($resource, $this->locale);
             $this->addChannelData($resource);
             $this->addImageData($resource);
             $this->addPriceData($resource);
+
+            parent::getDataForSingleResource($resource);
         }
     }
 
-    private function addTranslationData(ProductInterface $resource): void
+    private function addTranslationData(ProductInterface $resource, string $locale): void
     {
-        $translation = $resource->getTranslation();
+        $translation = $resource->getTranslation($locale);
 
         $this->addDataForResource($resource, 'Locale', $translation->getLocale());
         $this->addDataForResource($resource, 'Name', $translation->getName());
@@ -99,9 +99,9 @@ final class ProductResourcePlugin extends ResourcePlugin
         $this->addDataForResource($resource, 'Channels', $channelSlug);
     }
 
-    private function addAttributeData(ProductInterface $resource): void
+    private function addAttributeData(ProductInterface $resource, string $locale): void
     {
-        $attributes = $resource->getAttributes();
+        $attributes = $resource->getAttributesByLocale($locale, $locale);
 
         /** @var AttributeValueInterface $attribute */
         foreach ($attributes as $attribute) {

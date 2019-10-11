@@ -11,7 +11,7 @@ interface PluginPoolInterface
      */
     public function getPlugins(): array;
 
-    public function initPlugins(array $ids): void;
+    public function initPlugins(array $ids, string $locale): void;
 
-    public function getDataForId(string $id): array;
+    public function getDataForId(string $id, string $locale): array;
 }

@@ -11,6 +11,7 @@ use FriendsOfSylius\SyliusImportExportPlugin\Repository\ProductImageRepositoryIn
 use FriendsOfSylius\SyliusImportExportPlugin\Service\AttributeCodesProviderInterface;
 use FriendsOfSylius\SyliusImportExportPlugin\Service\ImageTypesProvider;
 use FriendsOfSylius\SyliusImportExportPlugin\Service\ImageTypesProviderInterface;
+use Ramsey\Uuid\Uuid;
 use Sylius\Bundle\CoreBundle\Doctrine\ORM\ProductTaxonRepository;
 use Sylius\Component\Channel\Repository\ChannelRepositoryInterface;
 use Sylius\Component\Core\Model\ChannelPricingInterface;
@@ -30,8 +31,9 @@ use Sylius\Component\Taxonomy\Factory\TaxonFactoryInterface;
 use Sylius\Component\Taxonomy\Repository\TaxonRepositoryInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
+use Sylius\Component\Product\Repository\ProductOptionRepositoryInterface;
 
-class ProductProcessor implements ResourceProcessorInterface
+final class ProductVariantProcessor implements ResourceProcessorInterface
 {
     /** @var RepositoryInterface */
     private $channelPricingRepository;
@@ -57,7 +59,7 @@ class ProductProcessor implements ResourceProcessorInterface
     private $resourceProductFactory;
     /** @var TaxonFactoryInterface */
     private $resourceTaxonFactory;
-    /** @var ProductRepositoryInterface */
+    /** @var ProductVariantRepositoryInterface */
     private $productRepository;
     /** @var TaxonRepositoryInterface */
     private $taxonRepository;
@@ -85,13 +87,17 @@ class ProductProcessor implements ResourceProcessorInterface
     private $productVariantRepository;
     /** @var FactoryInterface */
     private $productTranslationFactory;
+    /** @var RepositoryInterface */
+    private $syliusShippingCategory;
     /** @var Slugify  */
     private $slugify;
+    /** @var ProductOptionRepositoryInterface */
+    private $productOptionRepository;
 
     public function __construct(
         ProductFactoryInterface $productFactory,
         TaxonFactoryInterface $taxonFactory,
-        ProductRepositoryInterface $productRepository,
+        RepositoryInterface $productRepository,
         TaxonRepositoryInterface $taxonRepository,
         MetadataValidatorInterface $metadataValidator,
         PropertyAccessorInterface $propertyAccessor,
@@ -112,7 +118,9 @@ class ProductProcessor implements ResourceProcessorInterface
         ?TransformerPoolInterface $transformerPool,
         EntityManagerInterface $manager,
         FactoryInterface $syliusFactoryProductTranslation,
-        array $headerKeys
+        RepositoryInterface $syliusShippingCategory,
+        array $headerKeys,
+        ProductOptionRepositoryInterface $productOptionRepository
     ) {
         $this->resourceProductFactory = $productFactory;
         $this->resourceTaxonFactory = $taxonFactory;
@@ -138,7 +146,9 @@ class ProductProcessor implements ResourceProcessorInterface
         $this->channelPricingFactory = $channelPricingFactory;
         $this->channelPricingRepository = $channelPricingRepository;
         $this->productTranslationFactory = $syliusFactoryProductTranslation;
+        $this->syliusShippingCategory = $syliusShippingCategory;
         $this->slugify = new Slugify();
+        $this->productOptionRepository = $productOptionRepository;
     }
 
     /**
@@ -151,34 +161,59 @@ class ProductProcessor implements ResourceProcessorInterface
 
         $this->headerKeys = \array_merge($this->headerKeys, $this->attrCode);
         $this->headerKeys = \array_merge($this->headerKeys, $this->imageCode);
-        $this->metadataValidator->validateHeaders($this->headerKeys, $data);
+        //$this->metadataValidator->validateHeaders($this->headerKeys, $data);
 
         $product = $this->getProduct($data);
 
         $this->setChannel($product, $data);
-
         $this->setDetails($product, $data);
-        //$this->setVariant($product, $data);
         $this->setAttributesData($product, $data);
         $this->setMainTaxon($product, $data);
         $this->setTaxons($product, $data);
-        //$this->setImage($product, $data);
 
-        $this->productRepository->add($product);
-    }
+        $variant = $this->getProductVariant($data['Variant_Code']);
+        $variant->setCurrentLocale($data['Locale']);
+        $variant->setName(substr($data['Variant_Name'], 0, 255));
+        $variant->setCode($data['Variant_Code'] ?: (string) Uuid::uuid4());
 
-    private function getValidSlug(string $name): string
-    {
-        $basicSlug = $this->slugify->slugify($name);
-        if (isset($this->slugs[$basicSlug])) {
-            $this->slugs[$basicSlug] = $this->slugs[$basicSlug] + 1;
+        $variant->setEan($data['Variant_Ean']);
+        $variant->setCodeGalitt($data['Variant_CodeGalitt']);
+        $variant->setShippingRequired(empty($data['Variant_ShippingRequired']));
+        $variant->setWidth($this->transformerPool->handle('float', $data['Variant_ShippingWidth']));
+        $variant->setHeight($this->transformerPool->handle('float', $data['Variant_ShippingHeight']));
+        $variant->setDepth($this->transformerPool->handle('float', $data['Variant_ShippingDepth']));
+        $variant->setWeight($this->transformerPool->handle('float', $data['Variant_ShippingWeight']));
 
-            return $basicSlug.'-'.$this->slugs[$basicSlug];
+        $shippingCategory = $this->syliusShippingCategory->findOneBy(['code' => $data['Variant_ShippingCategory']]);
+        $variant->setShippingCategory($shippingCategory);
+
+        if (!empty($data['Options'])) {
+            $options = \explode('|', $data['Options']);
+            $product->setVariantSelectionMethod(ProductInterface::VARIANT_SELECTION_MATCH);
+            foreach ($options as $optionCode) {
+                $product->addOption($this->productOptionRepository->findOneBy(['code' => $optionCode]));
+            }
         }
 
-        $this->slugs[$basicSlug] = 0;
+        foreach ($product->getChannels() as $channel) {
+            $channelCode = $channel->getCode();
+            $channelPricing = $this->channelPricingRepository->findOneBy([
+                'channelCode' => $channelCode,
+                'productVariant' => $variant,
+            ]);
 
-        return $basicSlug;
+            if (null === $channelPricing) {
+                $channelPricing = $this->channelPricingFactory->createNew();
+                $channelPricing->setChannelCode($channelCode);
+                $variant->addChannelPricing($channelPricing);
+            }
+
+            $channelPricing->setPrice((int) $data['Variant_Price_'.$channelCode]);
+            $channelPricing->setOriginalPrice((int) $data['Variant_Price_'.$channelCode]);
+        }
+
+        $product->addVariant($variant);
+        $this->productRepository->add($product);
     }
 
     private function getProduct(array $data): ProductInterface
@@ -187,18 +222,11 @@ class ProductProcessor implements ResourceProcessorInterface
         $product = $this->productRepository->findOneBy(['code' => $data['Code']]);
         if (null === $product) {
             /** @var ProductInterface $product */
-            $optionsResolver =
-                (new OptionsResolver())
-                    ->setDefault('products', [])
-                    ->setAllowedTypes('products', 'array')
-            ;
-
-            /** @var ProductInterface $product */
             $product = $this->resourceProductFactory->createNew();
             $product->setCode($data['Code']);
             $product->setEnabled(true);
             $product->setReference(str_pad($data['Reference'], 4, '0', STR_PAD_LEFT));
-            $product->setLabel("TOTO");
+            $product->setLabel($data['Label']);
             $product->setEcoffret(!empty($data['Ecoffret']));
             $product->setOrderable(!empty($data['Orderable']));
             $product->setListed(!empty($data['Listed']));
@@ -221,6 +249,18 @@ class ProductProcessor implements ResourceProcessorInterface
         }
 
         return $productVariant;
+    }
+
+    private function setChannel(ProductInterface $product, array $data): void
+    {
+        $channels = \explode('|', $data['Channels']);
+        foreach ($channels as $channelCode) {
+            $channel = $this->channelRepository->findOneBy(['code' => $channelCode]);
+            if ($channel === null) {
+                continue;
+            }
+            $product->addChannel($channel);
+        }
     }
 
     private function setMainTaxon(ProductInterface $product, array $data): void
@@ -288,7 +328,35 @@ class ProductProcessor implements ResourceProcessorInterface
         $translation->setShortDescription($data['Short_description']);
         $translation->setMetaDescription($data['Meta_description']);
         $translation->setMetaKeywords($data['Meta_keywords']);
-        $translation->setSlug($data['link_rewrite']);
+        $translation->setSlug($this->getValidSlug($data['link_rewrite']));
+    }
+
+    private function setVariant(ProductInterface $product, array $data): void
+    {
+        $productVariant = $this->getProductVariant($product->getCode());
+        $productVariant->setCurrentLocale($data['Locale']);
+        $productVariant->setCurrentLocale($data['Locale']);
+        $productVariant->setName(substr($data['Name'], 0, 255));
+
+        $channels = \explode('|', $data['Channels']);
+        foreach ($channels as $channelCode) {
+            $channelPricing = $this->channelPricingRepository->findOneBy([
+                'channelCode' => $channelCode,
+                'productVariant' => $productVariant,
+            ]);
+
+            if (null === $channelPricing) {
+                /** @var ChannelPricingInterface $channelPricing */
+                $channelPricing = $this->channelPricingFactory->createNew();
+                $channelPricing->setChannelCode($channelCode);
+                $productVariant->addChannelPricing($channelPricing);
+            }
+
+            $channelPricing->setPrice((int) $data['Price']);
+            $channelPricing->setOriginalPrice((int) $data['Price']);
+        }
+
+        $product->addVariant($productVariant);
     }
 
     private function setAttributeValue(ProductInterface $product, array $data, string $attrCode): void
@@ -308,18 +376,6 @@ class ProductProcessor implements ResourceProcessorInterface
         $attr->setValue($data[$attrCode]);
         $product->addAttribute($attr);
         $this->manager->persist($attr);
-    }
-
-    private function setChannel(ProductInterface $product, array $data): void
-    {
-        $channels = \explode('|', $data['Channels']);
-        foreach ($channels as $channelCode) {
-            $channel = $this->channelRepository->findOneBy(['code' => $channelCode]);
-            if ($channel === null) {
-                continue;
-            }
-            $product->addChannel($channel);
-        }
     }
 
     private function addTaxonToProduct(ProductInterface $product, string $taxonCode): void
@@ -343,5 +399,19 @@ class ProductProcessor implements ResourceProcessorInterface
         $productTaxon = $this->productTaxonFactory->createNew();
         $productTaxon->setTaxon($taxon);
         $product->addProductTaxon($productTaxon);
+    }
+
+    private function getValidSlug(string $name): string
+    {
+        $basicSlug = $this->slugify->slugify($name);
+        if (isset($this->slugs[$basicSlug])) {
+            $this->slugs[$basicSlug] = $this->slugs[$basicSlug] + 1;
+
+            return $basicSlug.'-'.$this->slugs[$basicSlug];
+        }
+
+        $this->slugs[$basicSlug] = 0;
+
+        return $basicSlug;
     }
 }

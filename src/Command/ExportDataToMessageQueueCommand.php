@@ -139,10 +139,10 @@ final class ExportDataToMessageQueueCommand extends Command
     private function finishExport(array $items, string $file, string $name, OutputInterface $output): void
     {
         $output->writeln(sprintf(
-          "<info>Exported %d item(s) to '%s' via the %s exporter</info>",
-          count($items),
-          $file,
-          $name
+            "<info>Exported %d item(s) to '%s' via the %s exporter</info>",
+            count($items),
+            $file,
+            $name
         ));
     }
 }

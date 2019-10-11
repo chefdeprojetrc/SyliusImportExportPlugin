@@ -14,29 +14,29 @@ use Webmozart\Assert\Assert;
 
 class ArrayToStringHandlerSpec extends ObjectBehavior
 {
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ArrayToStringHandler::class);
     }
 
-    function it_extends()
+    public function it_extends()
     {
         $this->shouldHaveType(Handler::class);
     }
 
-    function it_should_implement()
+    public function it_should_implement()
     {
         $this->shouldImplement(HandlerInterface::class);
     }
 
-    function it_should_process_directly()
+    public function it_should_process_directly()
     {
         $array = ['a', 'b', 'c'];
         $this->handle('test', $array)->shouldBeString();
         $this->handle('test', $array)->shouldBe('a|b|c');
     }
 
-    function it_should_process_via_pool()
+    public function it_should_process_via_pool()
     {
         $array = ['a', 'b', 'c'];
 

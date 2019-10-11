@@ -27,17 +27,17 @@ class ResourceProcessorSpec extends ObjectBehavior
         $this->beConstructedWith($factory, $repository, $propertyAccessor, $metadataValidator, $entityManager, []);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType(ResourceProcessor::class);
     }
 
-    function it_implements_the_resource_processor_interface()
+    public function it_implements_the_resource_processor_interface()
     {
         $this->shouldImplement(ResourceProcessorInterface::class);
     }
 
-    function it_can_process_an_array_of_tax_category_data(
+    public function it_can_process_an_array_of_tax_category_data(
         FactoryInterface $factory,
         TaxCategoryInterface $taxCategory,
         PropertyAccessorInterface $propertyAccessor,
@@ -73,7 +73,7 @@ class ResourceProcessorSpec extends ObjectBehavior
         $this->process($dataset);
     }
 
-    function it_can_process_an_array_of_country_data(
+    public function it_can_process_an_array_of_country_data(
         FactoryInterface $factory,
         TaxCategoryInterface $country,
         RepositoryInterface $repository,
@@ -103,7 +103,7 @@ class ResourceProcessorSpec extends ObjectBehavior
         $entityManager->flush();
     }
 
-    function it_throws_accessor_not_found_exception_for_non_existing_header_keys(
+    public function it_throws_accessor_not_found_exception_for_non_existing_header_keys(
         FactoryInterface $factory,
         TaxCategoryInterface $country,
         RepositoryInterface $repository,
