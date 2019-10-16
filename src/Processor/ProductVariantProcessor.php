@@ -171,7 +171,15 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         $this->setMainTaxon($product, $data);
         $this->setTaxons($product, $data);
 
-        $variant = $this->getProductVariant($data['Variant_Code']);
+        if (!empty($data['Options'])) {
+            $options = \explode('|', $data['Options']);
+            $product->setVariantSelectionMethod(ProductInterface::VARIANT_SELECTION_MATCH);
+            foreach ($options as $optionCode) {
+                $product->addOption($this->productOptionRepository->findOneBy(['code' => $optionCode]));
+            }
+        }
+
+        /*$variant = $this->getProductVariant($data['Variant_Code']);
         $variant->setCurrentLocale($data['Locale']);
         $variant->setName(substr($data['Variant_Name'], 0, 255));
         $variant->setCode($data['Variant_Code'] ?: (string) Uuid::uuid4());
@@ -186,14 +194,6 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
 
         $shippingCategory = $this->syliusShippingCategory->findOneBy(['code' => $data['Variant_ShippingCategory']]);
         $variant->setShippingCategory($shippingCategory);
-
-        if (!empty($data['Options'])) {
-            $options = \explode('|', $data['Options']);
-            $product->setVariantSelectionMethod(ProductInterface::VARIANT_SELECTION_MATCH);
-            foreach ($options as $optionCode) {
-                $product->addOption($this->productOptionRepository->findOneBy(['code' => $optionCode]));
-            }
-        }
 
         foreach ($product->getChannels() as $channel) {
             $channelCode = $channel->getCode();
@@ -213,6 +213,8 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
         }
 
         $product->addVariant($variant);
+        */
+
         $this->productRepository->add($product);
     }
 
@@ -224,7 +226,7 @@ final class ProductVariantProcessor implements ResourceProcessorInterface
             /** @var ProductInterface $product */
             $product = $this->resourceProductFactory->createNew();
             $product->setCode($data['Code']);
-            $product->setEnabled(true);
+            $product->setEnabled(!empty($data['Enabled']));
             $product->setReference(str_pad($data['Reference'], 4, '0', STR_PAD_LEFT));
             $product->setLabel($data['Label']);
             $product->setEcoffret(!empty($data['Ecoffret']));
